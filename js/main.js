@@ -2,9 +2,11 @@ var turnCount = 0;
 var players = [1,2];
 var playerTurn = 1;
 var $playerTurn = $(".player-turn");
-var boardSize = 3;
+var boardSize = 4;
 var $tableTarget = $(".table-target");
 var gameOver = false;
+var $square = $("");
+var $buttons = $("button");
 
 function tableHTML(x){
   var table = "";
@@ -17,13 +19,23 @@ function tableHTML(x){
         };
         return column;
       }();
-      table = table + row + "<div class='col-xs-4'></div>" + cells + "</div>";
+      table = table + row + cells + "</div>";
     };
     $tableTarget.html(table);
   };
 
 tableHTML(boardSize);
-var $square = $(".square");
+$square = $(".square");
+
+function setBoardSize(){
+  boardSize = parseInt($(this).text().split("")[0]);
+  tableHTML(boardSize);
+  $square = $(".square");
+  $square.click(this, takeTurn);
+  return false;
+};
+
+$buttons.click(this, setBoardSize);
 
 function applyXO(element){
   if(playerTurn == 1){
@@ -50,42 +62,40 @@ function updateTurnCount(){
 };
 
 function winAction(num){
-  $(".message").text("Player " + num + " wins!");
+  $(".message").html("<div class='message text-success'>Player " + num + " wins!</div>")
   gameOver = true;
-};
-
-function winCondition(i, num, rowOrColumn){
-  if($(".player-" + num + "." + rowOrColumn + "-" + i).length == 3){
-    winAction(num);
-  };
 };
 
 function checkForRowAndColumnWin(){
   $.each(["row", "column"], function( index, rowOrColumn){
     $.each( players, function( index, num ){
-      for(var i = 1; i <= 3; i++){
-        winCondition(i, num, rowOrColumn);
+      for(var i = 1; i <= boardSize; i++){
+        if($(".player-" + num + "." + rowOrColumn + "-" + i).length == boardSize){
+          winAction(num);
+        };
       };
     });
   });
 };
 
 function checkForAscendingDiagonalWin(num){
-  var array = [$(".row-3.column-1.player-" + num).length,
-               $(".row-2.column-2.player-" + num).length,
-               $(".row-1.column-3.player-" + num).length];
+  var array = []
+  for(i = 0; i < boardSize; i++){
+    array.push($(".row-" + (boardSize - i) + ".column-" + (1 + i) + ".player-" + num).length)
+    };
   var sum = array.reduce(function(a,b){ return a + b; });
-  if(sum == 3){
+  if(sum == boardSize){
     winAction(num);
   };
 };
 
 function checkForDescendingDiagonalWin(num){
-  var array = [$(".row-1.column-1.player-" + num).length,
-               $(".row-2.column-2.player-" + num).length,
-               $(".row-3.column-3.player-" + num).length];
+  var array = []
+  for(i = 1; i <= boardSize; i++){
+    array.push($(".row-" + i + ".column-" + i + ".player-" + num).length)
+    };
   var sum = array.reduce(function(a,b){ return a + b; });
-  if(sum == 3){
+  if(sum == boardSize){
     winAction(num);
   };
 };
@@ -101,9 +111,9 @@ function checkForWin(){
 function takeTurn(){
   var $element = $(this);
   if (gameOver == true){                             // Do not play when game is ended
-    $(".message").text("Game over! Refresh to play again.")
+    $(".message").addClass("text-danger").text("Game over! Refresh to play again.")
   } else if ($element.hasClass("clicked")){         // Do not play a clicked square
-    $(".message").text("This square is taken.")
+    $(".message").addClass("text-danger").text("This square is taken.")
   } else {                                          // Play game!
     $(".message").empty();
     applyXO($element);
