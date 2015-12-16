@@ -8,7 +8,7 @@ var gameOver = false;
 var $square = $("");
 var $buttons = $("button");
 
-function tableHTML(x){
+function renderTableHTML(x){
   var table = "";
   for(j = 1; j <= x; j++){
     var row = ("<div class='row row-" + j + "'>");
@@ -24,12 +24,16 @@ function tableHTML(x){
     $tableTarget.html(table);
   };
 
-tableHTML(boardSize);
+renderTableHTML(boardSize);
 $square = $(".square");
 
 function setBoardSize(){
   boardSize = parseInt($(this).text().split("")[0]);
-  tableHTML(boardSize);
+  renderTableHTML(boardSize);
+  playerTurn = 1;
+  $playerTurn.text(playerTurn);
+  turnCount = 0;
+  $(".turn-count").text(turnCount);
   $square = $(".square");
   $square.click(this, takeTurn);
   return false;
@@ -108,6 +112,13 @@ function checkForWin(){
   });
 };
 
+function checkForTie(){
+  if($('.clicked').length == boardSize * boardSize){
+    $(".message").html("<div class='message text-danger'>You're tied!</div>")
+    gameOver = true;
+  };
+};
+
 function takeTurn(){
   var $element = $(this);
   if (gameOver == true){                             // Do not play when game is ended
@@ -120,6 +131,7 @@ function takeTurn(){
     $element.addClass("clicked");
     updatePlayerTurn();
     updateTurnCount();
+    checkForTie();
     checkForWin();
   }
 };
